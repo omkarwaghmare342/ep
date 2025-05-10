@@ -1,0 +1,41 @@
+#include <LPC214x.h> 
+ 
+#define LEDS 0x000000FF  // LEDs connected to P0.0 - P0.7 jumper wire  
+#define BUTTON (1 << 15)  // Button connected to P0.15 internally connected  
+ 
+void delay_ms(unsigned int ms) { 
+    unsigned int i, j; 
+    for (i = 0; i < ms; i++) { 
+        for (j = 0; j < 1275; j++);  // Simple delay loop 
+    } 
+} 
+ 
+int main() { 
+    unsigned char pattern = 0x01;  // Initial LED pattern 
+ 
+    // Configure P0.0 - P0.7 as output for LEDs 
+    IODIR0 |= LEDS; 
+    // Configure P0.8 as input for button 
+    IODIR0 &= ~BUTTON; 
+ 
+    while (1) { 
+        // Check button state (active low) 
+        if (!(IOPIN0 & BUTTON)) { 
+            // Button is pressed, chase LEDs from left to right 
+            while (!(IOPIN0 & BUTTON)) { 
+                IOCLR0 = LEDS;     // Clear previous LED states 
+                IOSET0 = pattern;   // Set LEDs according to pattern 
+                delay_ms(250);      // 250 ms delay for visibility 
+ 
+                // Shift the LEDs to the left 
+                pattern <<= 1; 
+ 
+                // If all LEDs are off (pattern == 0x00), reset to 0x01 
+                if (pattern == 0) { 
+                    pattern = 0x01; 
+                } 
+            } 
+        }  
+    } 
+    return 0; 
+} 

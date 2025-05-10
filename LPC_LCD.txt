@@ -1,0 +1,74 @@
+#include LPC214x.h
+
+#define RS (116)
+#define RW (117)
+#define E  (118)
+
+void delay(unsigned int);
+void init(void);
+void com(unsigned char);
+void dt(unsigned char);
+
+void delay(unsigned int k) {
+    unsigned int i, j;
+    for(i = 0; i  k; i++) {
+        for(j = 0; j  1275; j++);
+    }
+}
+
+void init() {
+    com(0x38);   8-bit mode, 2 lines
+    delay(15);
+    com(0x01);   Clear display
+    delay(15);
+    com(0x0E);   Display ON, cursor ON
+    delay(15);
+    com(0x80);   Start at first line, first position
+    delay(15);
+}
+
+void com(unsigned char CD) {
+    IOCLR1 = 0xFF000000;
+    IOSET1 = CD  24;
+    IOCLR0 = RS;
+    IOCLR0 = RW;
+    IOSET0 = E;
+    delay(15);
+    IOCLR0 = E;
+    delay(15);
+}
+
+void dt(unsigned char DT) {
+    IOCLR1 = 0xFF000000;
+    IOSET1 = DT  24;
+    IOCLR0 = RW;
+    IOSET0 = RS;
+    IOSET0 = E;
+    delay(15);
+    IOCLR0 = E;
+    delay(15);
+}
+
+int main() {
+    IODIR0 = 0x00FF0000;   RS, RW, E on P0.16–P0.18
+    IODIR1 = 0xFF000000;   Data lines on P1.24–P1.31
+
+    init();
+
+    char line1[] = PICT;
+    char line2[] = PUNE;
+
+     First line
+    com(0x80);   First row, first position
+    for(int i = 0; line1[i] != '0'; i++) {
+        dt(line1[i]);
+    }
+
+     Second line
+    com(0xC0);   Second row, first position
+    for(int i = 0; line2[i] != '0'; i++) {
+        dt(line2[i]);
+    }
+
+    while(1);   Infinite loop to hold display
+}

@@ -1,0 +1,47 @@
+#include "stm32f4xx.h"
+#include<stdio.h>
+
+int _write(int file, char *ptr, int len){
+int DataIdx;
+
+for(DataIdx = 0;DataIdx<len;DataIdx++){
+ITM_SendChar(*ptr++);
+}
+
+return len;
+}
+
+int main(void) {
+int result;
+
+/* Enable GPIOA and GPIOC clock */
+RCC->AHB1ENR |= (1 << 0) | (1 << 2); // Enable GPIOA and GPIOC clock
+
+/* Set PC0 as output for LED */
+GPIOC->MODER &= ~0x00000003; // Clear PC0 mode bits
+GPIOC->MODER |= 0x00000001; // Set PC0 to output mode
+
+/* Set PA3 as analog input */
+GPIOA->MODER |= (3 << 6); // PA3 analog mode (0b11 << MODER3)
+
+/* Enable ADC2 clock */
+RCC->APB2ENR |= 0x00000200; // Enable ADC2 clock
+
+/* Configure ADC2 */
+ADC2->CR2 = 0; // Software trigger
+ADC2->SQR3 = 3; // First conversion on Channel 3 (PA3)
+ADC2->SQR1 = 0; // Conversion sequence length = 1
+ADC2->CR2 |= 1; // Enable ADC2
+
+while (1) {
+ADC2->CR2 |= 0x40000000; // Start a conversion
+while (!(ADC2->SR & 2)) {} // Wait for conversion to complete
+result = ADC2->DR; // Read ADC conversion result
+
+if (result & 0x100)
+GPIOC->BSRR = 0x00000001; // Turn on LED (PC0)
+else
+GPIOC->BSRR = 0x00010000; // Turn off LED (PC0)
+printf("Result- %d \n",result);
+}
+}

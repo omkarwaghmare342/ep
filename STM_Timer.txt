@@ -1,0 +1,36 @@
+#include "stm32f4xx.h"
+
+// Initialize GPIOC pin 0 for LED output
+void GPIO_Init(void) {
+    RCC->AHB1ENR |= (1 << 2);          // Enable clock for GPIOC
+    GPIOC->MODER |= (1 << 0);          // Set PC0 as output (MODER0 = 01)
+}
+
+// Initialize Timer2 for 1ms tick
+void TIM2_Init(void) {
+    RCC->APB1ENR |= (1 << 0);          // Enable clock for TIM2
+    TIM2->PSC = 16000 - 1;             // Prescaler: 16MHz / 16000 = 1kHz (1ms tick)
+    TIM2->ARR = 1000;                  // Auto-reload for 1000 ticks = 1s
+    TIM2->CR1 |= (1 << 0);             // Enable timer
+}
+
+// Delay function using Timer2 (in milliseconds)
+void delay_ms(uint32_t ms) {
+    for (uint32_t i = 0; i < ms; i++) {
+        TIM2->CNT = 0;                 // Reset counter
+        while (TIM2->CNT < 1);         // Wait 1 ms
+    }
+}
+
+int main(void) {
+    GPIO_Init();
+    TIM2_Init();
+
+    while (1) {
+        GPIOC->BSRR = (1 << 0);        // Turn ON PC0
+        delay_ms(1000);                // 1 second delay
+
+        GPIOC->BSRR = (1 << 16);       // Turn OFF PC0
+        delay_ms(1000);                // 1 second delay
+    }
+}

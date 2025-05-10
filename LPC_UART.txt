@@ -1,0 +1,17 @@
+#include<LPC214x.h>
+
+int main (){
+	
+	int i=0;
+	PINSEL0 |= 0x05;
+	U0LCR = 0x83;
+	U0DLL = 97;
+	U0LCR = 0x3;
+	
+	while(i<10){
+		while(!(U0LSR & 0x20));
+		U0THR='H';
+		i++;
+	}}
+	
+	

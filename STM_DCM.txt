@@ -1,0 +1,31 @@
+#include "stm32f4xx.h"
+
+void delay(unsigned int t)
+{
+    unsigned int i, j;
+    for(i=0; i<t; i++)
+        for(j=0; j<3195; j++);
+}
+
+int main()
+{
+    // Enable clock for GPIOB
+    RCC->AHB1ENR |= (1<<1);
+    
+    // Set PB2 and PB10 as output
+    GPIOB->MODER = 0;
+    GPIOB->MODER|= (1<<4)|(1<<20);
+
+    // Set PB10 as logic 0 or ground to rotate motor in 1 direction.
+    GPIOB->BSRR |= (1<<(10+16));
+
+    while(1)
+    {
+        // Toggle PB2
+        GPIOB->BSRR |= (1<<2);
+        delay(2);
+        GPIOB->BSRR |= (1<<(2+16));
+        delay(2);
+    }
+    return 0;
+}

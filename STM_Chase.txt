@@ -1,0 +1,53 @@
+#include <STM32F4xx.h>
+// Function to create a delay
+void delay(unsigned int itime){
+    unsigned int i, j;
+    for (i= 0; i< itime; i++){
+        for(j= 0; j< 3195; j++); // Approximate delay loop
+    }
+}
+ //0,7,14
+void main(void){
+    // Enable clock for GPIOB, GPIOC, and GPIOE
+    RCC->AHB1ENR = (1<<1);
+
+    // Configure GPIO mode selection (Output mode)
+  //  GPIOC->MODER = (1<<0)|(1<<4)|(1<<6); // PC0, PC2, PC3 as output
+    GPIOB->MODER = (1<<0)|(1<<14)|(1<<28); // PB0, PB1, PB2, PB10 as output
+  //  GPIOE->MODER = (1<<6); // PE3 as output
+
+    // Set output type as push-pull
+//    GPIOC->OTYPER = 0;
+    GPIOB->OTYPER = 0;
+  //  GPIOE->OTYPER = 0;
+
+    // Set output speed (Low speed)
+ //   GPIOC->OSPEEDR = 0;
+    GPIOB->OSPEEDR = 0;
+
+ //   GPIOE->OSPEEDR = 0;
+
+    // Disable pull-up/pull-down resistors
+ //   GPIOC->PUPDR = 0;
+    GPIOB->PUPDR = 0;
+ //   GPIOE->PUPDR = 0;
+
+    while(1){
+        // Turn ON LEDs by setting respective bits in BSRR register
+      //  GPIOC->BSRR = (1<<0)|(1<<2)|(1<<3); // PC0, PC2, PC3 HIGH
+  //      GPIOB->BSRR = (1<<0)|(1<<7)|(1<<14); // PB0, PB1, PB2, PB10 HIGH
+        GPIOB->BSRR = (1<<0)|(1<<23)|(1<<30); // PB0, PB1, PB2, PB10 HIGH
+      //  GPIOE->BSRR = (1<<3); // PE3 HIGH
+        delay(50); // Wait
+        // Turn OFF LEDs by setting respective bits in BSRR register (using upper half-word)
+      //  GPIOC->BSRR = (1<<16)|(1<<18)|(1<<19); // PC0, PC2, PC3 LOW
+     //   GPIOB->BSRR = (1<<16)|(1<<23)|(1<<30); // PB0, PB1, PB2, PB10 LOW
+        GPIOB->BSRR = (1<<16)|(1<<7)|(1<<30); // PB0, PB1, PB2, PB10 LOW
+      //  GPIOE->BSRR = (1<<19); // PE3 LOW
+        delay(50); // Wait
+
+        GPIOB->BSRR = (1<<16)|(1<<23)|(1<<14); // PB0, PB1, PB2, PB10 LOW
+         //  GPIOE->BSRR = (1<<19); // PE3 LOW
+           delay(50); // Wait
+    }
+}

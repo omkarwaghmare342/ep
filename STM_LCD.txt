@@ -1,0 +1,141 @@
+#include <stm32f407xx.h>
+
+void delay(unsigned int itime) {
+    unsigned int i, j;
+    for (i = 0; i < itime; i++) {
+        for (j = 0; j < 3195; j++) {
+            // Empty loop to create delay
+        }
+    }
+}
+
+void clear() {
+    GPIOC->BSRR = 65535 << 16;  // Reset all GPIOC pins
+    GPIOE->BSRR = 65535 << 16;  // Reset all GPIOE pins
+}
+
+void zero() {
+    GPIOC->BSRR = (3 << 6);     // Set GPIOC pins
+    GPIOE->BSRR = (23 << 0);    // Set GPIOE pins
+}
+
+void one() {
+    clear();
+    GPIOC->BSRR = (2 << 6);
+    GPIOE->BSRR = (1 << 0);
+}
+
+void two() {
+    clear();
+    GPIOC->BSRR = (3 << 6);
+    GPIOE->BSRR = (38 << 0);
+}
+
+void three() {
+    clear();
+    GPIOC->BSRR = (3 << 6);
+    GPIOE->BSRR = (35 << 0);
+}
+
+void four() {
+    clear();
+    GPIOC->BSRR = (2 << 6);
+    GPIOE->BSRR = (49 << 0);
+}
+
+void five() {
+    clear();
+    GPIOC->BSRR = (1 << 6);
+    GPIOE->BSRR = (51 << 0);
+}
+
+void six() {
+    clear();
+    GPIOC->BSRR = (1 << 6);
+    GPIOE->BSRR = (55 << 0);
+}
+
+void seven() {
+    clear();
+    GPIOC->BSRR = (3 << 6);
+    GPIOE->BSRR = (1 << 0);
+}
+
+void eight() {
+    clear();
+    GPIOC->BSRR = (3 << 6);
+    GPIOE->BSRR = (55 << 0);
+}
+
+void nine() {
+    clear();
+    GPIOC->BSRR = (3 << 6);
+    GPIOE->BSRR = (51 << 0);
+}
+
+void msb(unsigned int m) {
+    GPIOA->BSRR = (1 << 4);
+    GPIOA->BSRR = (1 << 22);  // Reset PA6
+
+    switch (m) {
+        case 0: zero(); break;
+        case 1: one(); break;
+        case 2: two(); break;
+        case 3: three(); break;
+        case 4: four(); break;
+        case 5: five(); break;
+        case 6: six(); break;
+        case 7: seven(); break;
+        case 8: eight(); break;
+        case 9: nine(); break;
+    }
+}
+
+void lsb(unsigned int s) {
+    GPIOA->BSRR = (1 << 6);     // Set LSB enable pin high
+    GPIOA->BSRR = (1 << 20);    // Reset MSB enable pin (PA4)
+
+    switch (s) {
+        case 0: zero(); break;
+        case 1: one(); break;
+        case 2: two(); break;
+        case 3: three(); break;
+        case 4: four(); break;
+        case 5: five(); break;
+        case 6: six(); break;
+        case 7: seven(); break;
+        case 8: eight(); break;
+        case 9: nine(); break;
+    }
+}
+
+int main(void) {
+    // Enable clock for GPIOA, GPIOC, GPIOE, GPIOB
+    RCC->AHB1ENR = (1 << 2) | (1 << 0) | (1 << 4) | (1 << 1);
+
+    // Configure GPIOA pin 4 and 6 as output
+    GPIOA->MODER = (1 << 12) | (1 << 8);
+
+    // Configure GPIOB pin 6 and 7 as output
+    GPIOB->MODER = (1 << 12) | (1 << 14);
+
+    // Configure GPIOC and GPIOE as output (all pins)
+    GPIOC->MODER = 0x55555555;
+    GPIOE->MODER = 0x55555555;
+
+    int counter = 0;
+
+    while (1) {
+        int tens = counter / 10;
+        int units = counter % 10;
+
+        for (int i = 0; i < 100; i++) {
+            msb(tens);
+            delay(1);
+            lsb(units);
+        }
+
+        counter = (counter + 1) % 100;
+        delay(15);
+    }
+}
